@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MainActivity
+ *
  */
 public class MainActivity extends Activity {
 
