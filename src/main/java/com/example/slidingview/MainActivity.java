@@ -7,6 +7,9 @@ import android.view.Menu;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class MainActivity extends Activity {
 
     CustomSlidingView slidingView;
