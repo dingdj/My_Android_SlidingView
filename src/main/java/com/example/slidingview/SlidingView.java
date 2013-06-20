@@ -70,6 +70,8 @@ public abstract class SlidingView extends ViewGroup{
                 this.addViewInLayout(view, this.getChildCount(), null, true);
                 index++;
             }
+            l = 0;
+            t = t + height;
         }
 
 
