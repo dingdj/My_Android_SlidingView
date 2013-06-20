@@ -3,7 +3,6 @@ package com.example.slidingview;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
-
 import java.util.ArrayList;
 import java.util.List;
 
