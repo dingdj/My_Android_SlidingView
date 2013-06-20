@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,6 +16,8 @@ public abstract class SlidingView extends ViewGroup{
     private SlidingViewAdapter mAdapter;
 
     protected int mCurrentScreen = 0;
+
+    private List<CommonLayout> pageViewCache = new ArrayList<CommonLayout>();
 
     public SlidingView(Context context) {
         super(context);
