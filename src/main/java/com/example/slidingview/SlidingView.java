@@ -66,7 +66,6 @@ public abstract class SlidingView extends ViewGroup{
                 view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 view.layout(l, t, l+width, t+height);
                 l = l + width;
-                t = t + height;
                 this.addViewInLayout(view, this.getChildCount(), null, true);
                 index++;
             }
