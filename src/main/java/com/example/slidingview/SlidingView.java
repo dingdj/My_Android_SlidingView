@@ -79,6 +79,35 @@ public abstract class SlidingView extends ViewGroup{
 
     }
 
+    /**
+     *
+     * @param screen
+     */
+    protected void makePage(int screen, int width, int height){
+        List<ItemInfo> data = mAdapter.getDataInPage(screen);
+        int pageSize = mAdapter.getPageSize();
+        int index = 0;
+        int l = 0;
+        int t = 0;
+        for(int i=0; i<mAdapter.getRow(); i++){
+            for(int j=0; j<mAdapter.getCol(); j++){
+                ItemInfo itemInfo = data.get(index);
+                if(itemInfo == null){
+                    return;
+                }
+                View view = onGetItemView(pageSize*screen+index, null, this);
+                view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                view.layout(l, t, l+width, t+height);
+                l = l + width;
+                this.addViewInLayout(view, this.getChildCount(), null, true);
+                index++;
+            }
+            l = 0;
+            t = t + height;
+        }
+
+    }
+
 
     abstract protected View onGetItemView(int position, View contentView, View parent);
 
