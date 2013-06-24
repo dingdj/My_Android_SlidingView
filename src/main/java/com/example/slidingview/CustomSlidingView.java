@@ -27,6 +27,30 @@ public class CustomSlidingView extends SlidingView{
     protected View onGetItemView(int position, View contentView, View parent) {
         ImageView imageView = new ImageView(this.getContext());
         imageView.setImageDrawable(this.getContext().getResources().getDrawable(R.drawable.ic_launcher));
+        imageView.setOnClickListener(this);
+        imageView.setOnLongClickListener(this);
         return imageView;
+    }
+
+    /**
+     * Called when a view has been clicked.
+     *
+     * @param v The view that was clicked.
+     */
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    /**
+     * Called when a view has been clicked and held.
+     *
+     * @param v The view that was clicked and held.
+     *          <p/>
+     *          return True if the callback consumed the long click, false otherwise
+     */
+    @Override
+    public boolean onLongClick(View v) {
+        return true;
     }
 }

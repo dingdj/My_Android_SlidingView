@@ -2,6 +2,7 @@ package com.example.slidingview;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.ViewGroup;
 
 /**
@@ -27,5 +28,14 @@ public class CommonLayout extends ViewGroup{
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
 
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean addViewInLayout(View child, int index, LayoutParams params,
+                                      boolean preventRequestLayout) {
+        return super.addViewInLayout(child, index, params, preventRequestLayout);
     }
 }
