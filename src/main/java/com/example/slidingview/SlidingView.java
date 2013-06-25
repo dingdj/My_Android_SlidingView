@@ -33,6 +33,8 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     private Scroller mScroller;
 
+    private float width;
+
     private int mTouchState = TOUCH_STATE_REST;
 
     private static int TOUCH_STATE_REST = 0;
@@ -75,7 +77,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
         int childWidth = width/mAdapter.getCol();
         int childHeight = width/mAdapter.getRow();
-
+        this.width = width;
         layoutChildren(mCurrentScreen, width, height, childWidth, childHeight);
 
     }
@@ -86,8 +88,8 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
      * @param height
      */
     protected void layoutChildren(int currentScreen, int screenWidth, int screenHeight, int width, int height){
-        int pageSize = mAdapter.getPageSize();
-        makePages(currentScreen, pageSize-1, screenWidth, screenHeight, width, height);
+        int pageNum = mAdapter.getPageNum();
+        makePages(currentScreen, pageNum, screenWidth, screenHeight, width, height);
     }
 
     /**
@@ -101,7 +103,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
      */
     private void makePages(int startPage, int endPage, int screenWidth, int screenHeight,
                           int width, int height){
-        for(int screen = startPage; screen<endPage+1; screen++){
+        for(int screen = startPage; screen<endPage; screen++){
             makePage(screen, screenWidth, screenHeight, width, height);
         }
     }
@@ -125,10 +127,13 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         this.addViewInLayout(layout, this.getChildCount(), null, true);
         int pageSize = mAdapter.getPageSize();
         int index = 0;
-        int l = screenWidth;
+        int l = 0;
         int t = 0;
         for(int i=0; i<mAdapter.getRow(); i++){
             for(int j=0; j<mAdapter.getCol(); j++){
+                if(index >= data.size() ){
+                    return;
+                }
                 ItemInfo itemInfo = data.get(index);
                 if(itemInfo == null){
                     return;
@@ -148,46 +153,6 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     }
 
-
-
-
-    /**
-     * Implement this method to intercept all touch screen motion events.  This
-     * allows you to watch events as they are dispatched to your children, and
-     * take ownership of the current gesture at any point.
-     * <p/>
-     * <p>Using this function takes some care, as it has a fairly complicated
-     * interaction with {@link android.view.View#onTouchEvent(android.view.MotionEvent)
-     * View.onTouchEvent(MotionEvent)}, and using it requires implementing
-     * that method as well as this one in the correct way.  Events will be
-     * received in the following order:
-     * <p/>
-     * <ol>
-     * <li> You will receive the down event here.
-     * <li> The down event will be handled either by a child of this view
-     * group, or given to your own onTouchEvent() method to handle; this means
-     * you should implement onTouchEvent() to return true, so you will
-     * continue to see the rest of the gesture (instead of looking for
-     * a parent view to handle it).  Also, by returning true from
-     * onTouchEvent(), you will not receive any following
-     * events in onInterceptTouchEvent() and all touch processing must
-     * happen in onTouchEvent() like normal.
-     * <li> For as long as you return false from this function, each following
-     * event (up to and including the final up) will be delivered first here
-     * and then to the target's onTouchEvent().
-     * <li> If you return true from here, you will not receive any
-     * following events: the target view will receive the same event but
-     * with the action {@link android.view.MotionEvent#ACTION_CANCEL}, and all further
-     * events will be delivered to your onTouchEvent() method and no longer
-     * appear here.
-     * </ol>
-     *
-     * @param ev The motion event being dispatched down the hierarchy.
-     * @return Return true to steal motion events from the children and have
-     *         them dispatched to this ViewGroup through onTouchEvent().
-     *         The current target will receive an ACTION_CANCEL event, and no further
-     *         messages will be delivered here.
-     */
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         final int action = ev.getAction();
@@ -246,23 +211,38 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         final float y = event.getY();
         switch (action){
             case MotionEvent.ACTION_UP:
-                if (mTouchState == TOUCH_STATE_FLING_DOWN ){
+                /*if (mTouchState == TOUCH_STATE_FLING_DOWN ){
                     flingToScreen(mCurrentScreen-1);
                 }else if(mTouchState == TOUCH_STATE_FLING_UP){
                     flingToScreen(mCurrentScreen+1);
-                }
+                }*/
+                int screen = getScreen();
+                Log.v(TAG, "snap to screen:"+screen);
+                scrollToScreen(screen);
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.v(TAG, "onTouchEvent ACTION_DOWN");
+                Log.v(TAG, "onTouchEvent ACTION_MOVE"+mScroller.getCurrX());
                 //dealTouchStateInActionMove(x, y);
                 /*if (mTouchState != TOUCH_STATE_SCROLLING && mTouchState != TOUCH_STATE_DOWN) {
                     break;
                 }*/
                 int deltaX = (int) (mLastMotionX - x);
-                Log.v(TAG, "scrollBy");
-                scrollBy(deltaX, 0);
+                mLastMotionX = x;
+                smoothScrollBy(deltaX, 0);
+
         }
         return true;
+    }
+
+
+    //调用此方法设置滚动的相对偏移
+    public void smoothScrollBy(int dx, int dy) {
+
+        if(mScroller.getFinalX()+dx<=(mAdapter.getPageNum()-1)*width && mScroller.getFinalX()+dx >=0){
+            //设置mScroller的滚动偏移量
+            mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), dx, dy);
+            invalidate();//这里必须调用invalidate()才能保证computeScroll()会被调用，否则不一定会刷新界面，看不到滚动效果
+        }
     }
 
 
@@ -283,8 +263,23 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         super.computeScroll();
     }
 
-    private void flingToScreen(int screen){
+    /**
+     * 滚动到某一屏
+     * @param screen
+     */
+    private void scrollToScreen(int screen){
+        int screenNum = mAdapter.getPageNum();
+        if(screen >=0 && screen < screenNum){
+            float x = screen*width;
+            int dx = (int)(x - mScroller.getFinalX());
+            smoothScrollBy(dx, 0);
+        }
+        Log.w(TAG, "screen index error");
+    }
 
+    private int getScreen(){
+        int x = mScroller.getFinalX();
+        return (int)(x/(width/2));
     }
 
     abstract protected View onGetItemView(int position, View contentView, View parent);

@@ -47,8 +47,8 @@ public class SlidingViewAdapter {
         }
 
         int start = page*(col*row);
-        int end = (page+1)*(col*row);
-        end = Math.min(end, start+(data.size()%(col*row)-1));
+        int end = (page+1)*col*row;
+        end = Math.min(end, data.size());
         return data.subList(start, end);
     }
 
