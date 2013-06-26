@@ -34,7 +34,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     /**
      * Fling灵敏度
      */
-    public static final int SNAP_VELOCITY = 3000;
+    public static final int SNAP_VELOCITY = 2000;
 
     private Scroller mScroller;
 
@@ -44,15 +44,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     private static int TOUCH_STATE_REST = 0;
 
-    private static int TOUCH_STATE_FLING_UP = 1;
-
-    private static int TOUCH_STATE_FLING_DOWN = 2;
-
-    private static final int TOUCH_STATE_DOWN = 3;
-
     private static final int TOUCH_STATE_SCROLLING = 4;
-
-    private static final int TOUCH_STATE_DONE_WAITING = 5;
 
     private int mMaximumVelocity;
 
@@ -60,27 +52,25 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     public SlidingView(Context context) {
         super(context);
-        pageViewCache = new PageViewCache();
-        final ViewConfiguration configuration = ViewConfiguration.get(getContext());
-        mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
-        mScroller = new Scroller(context);
-
+        init();
     }
 
     public SlidingView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        pageViewCache = new PageViewCache();
-        final ViewConfiguration configuration = ViewConfiguration.get(getContext());
-        mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
-        mScroller = new Scroller(context);
+        init();
     }
 
     public SlidingView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init();
+    }
+
+
+    private void init(){
         pageViewCache = new PageViewCache();
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
-        mScroller = new Scroller(context);
+        mScroller = new Scroller(getContext());
     }
 
     /**
@@ -92,10 +82,9 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         int height = b - t;
 
         int childWidth = width/mAdapter.getCol();
-        int childHeight = width/mAdapter.getRow();
+        int childHeight = height/mAdapter.getRow();
         this.width = width;
         layoutChildren(mCurrentScreen, width, height, childWidth, childHeight);
-
     }
 
     /**
@@ -181,14 +170,18 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
                 mLastMotionY = y;
                 break;
             case MotionEvent.ACTION_MOVE:
-                /**
-                 * ACTION_DOWN在一个子view上时，判定fling up/down
-                 */
                 Log.v(TAG, "onInterceptTouchEvent ACTION_MOVE");
+                int deltaX = (int) (mLastMotionX - x);
+                if(Math.abs(deltaX) > 5){
+                    mTouchState = TOUCH_STATE_SCROLLING;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                mTouchState = TOUCH_STATE_REST;
                 break;
 
         }
-        return true;//mTouchState != TOUCH_STATE_REST;
+        return mTouchState != TOUCH_STATE_REST;
     }
 
     /**
@@ -199,7 +192,6 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        //处理fling
         final int action  = event.getAction();
         final float x = event.getX();
         final float y = event.getY();
@@ -209,30 +201,24 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         mVelocityTracker.addMovement(event);
         switch (action){
             case MotionEvent.ACTION_UP:
-                if (mTouchState == TOUCH_STATE_FLING_DOWN ){
-                    scrollToScreen(mCurrentScreen - 1);
-                }else if(mTouchState == TOUCH_STATE_FLING_UP){
-                    scrollToScreen(mCurrentScreen + 1);
-                }else{
-                    int screen = getScreen();
-                    Log.v(TAG, "snap to screen:"+screen);
-                    scrollToScreen(screen);
-                }
-                break;
-            case MotionEvent.ACTION_MOVE:
-                Log.v(TAG, "onTouchEvent ACTION_MOVE"+mScroller.getCurrX());
                 mVelocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
                 int velocityX = (int) mVelocityTracker.getXVelocity();
-                Log.v(TAG, "velocityX:"+velocityX);
                 if(velocityX > SNAP_VELOCITY){
                     scrollToScreen(mCurrentScreen-1);
                 }else if(velocityX < -SNAP_VELOCITY){
                     scrollToScreen(mCurrentScreen+1);
                 }else{
-                    int deltaX = (int) (mLastMotionX - x);
-                    mLastMotionX = x;
-                    smoothScrollBy((int)(3*deltaX/4), 0, 200);
+                    int screen = getScreen();
+                    Log.v(TAG, "snap to screen:"+screen);
+                    scrollToScreen(screen);
                 }
+                mTouchState = TOUCH_STATE_REST;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                Log.v(TAG, "onTouchEvent ACTION_MOVE"+mScroller.getCurrX());
+                int deltaX = (int) (mLastMotionX - x);
+                mLastMotionX = x;
+                smoothScrollBy((int)(3*deltaX/4), 0);
                 break;
 
         }
@@ -241,7 +227,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
 
     //调用此方法设置滚动的相对偏移
-    public void smoothScrollBy(int dx, int dy, int durationTime) {
+    public void smoothScrollBy(int dx, int dy) {
 
         if(mScroller.getFinalX()+dx<=(mAdapter.getPageNum()-1)*width && mScroller.getFinalX()+dx >=0){
             //设置mScroller的滚动偏移量
@@ -262,8 +248,6 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         if (mScroller.computeScrollOffset()){//滚动完成
             scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
             invalidate();
-        }else{//滚动未完成
-
         }
         super.computeScroll();
     }
@@ -277,15 +261,19 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         if(screen >=0 && screen < screenNum){
             float x = screen*width;
             int dx = (int)(x - mScroller.getFinalX());
-            smoothScrollBy(dx, 0, 200);
+            smoothScrollBy(dx, 0);
             mCurrentScreen = screen;
+        }else{
+            Log.w(TAG, "screen index error");
         }
-        Log.w(TAG, "screen index error");
     }
 
     private int getScreen(){
         int x = mScroller.getFinalX();
-        return (int)(x/(width/2));
+        Log.v("getScreen x", "x:"+ x);
+        float interval = x%width;
+        int rtn = (int)(x/width);
+        return rtn + (int)(interval/(width/2));
     }
 
     abstract protected View onGetItemView(int position, View contentView, View parent);
@@ -294,4 +282,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         this.mAdapter = mAdapter;
     }
 
+    public SlidingViewAdapter getAdapter() {
+        return mAdapter;
+    }
 }

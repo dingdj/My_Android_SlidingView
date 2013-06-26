@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 /**
  * Created by Administrator on 13-6-18.
@@ -26,7 +27,12 @@ public class CustomSlidingView extends SlidingView{
     @Override
     protected View onGetItemView(int position, View contentView, View parent) {
         ImageView imageView = new ImageView(this.getContext());
-        imageView.setImageDrawable(this.getContext().getResources().getDrawable(R.drawable.ic_launcher));
+        ItemInfo itemInfo = getAdapter().getItemInfoByIndex(position);
+        if(itemInfo != null){
+            imageView.setImageDrawable(itemInfo.getDrawable());
+        }else{
+            imageView.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_launcher));
+        }
         imageView.setOnClickListener(this);
         imageView.setOnLongClickListener(this);
         return imageView;
@@ -39,6 +45,8 @@ public class CustomSlidingView extends SlidingView{
      */
     @Override
     public void onClick(View v) {
+        Toast toast = Toast.makeText(v.getContext(), "onClick", 200);
+        toast.show();
 
     }
 
@@ -51,6 +59,8 @@ public class CustomSlidingView extends SlidingView{
      */
     @Override
     public boolean onLongClick(View v) {
+        Toast toast = Toast.makeText(v.getContext(), "onLongClick", 200);
+        toast.show();
         return true;
     }
 }

@@ -3,6 +3,9 @@ package com.example.slidingview;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
+
+import com.example.util.SystemUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,14 +21,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         slidingView = (CustomSlidingView)findViewById(R.id.slidingview);
-        List<ItemInfo> list = new ArrayList<ItemInfo>();
-        list.add(new ItemInfo("", null));
-        list.add(new ItemInfo("", null));
-        list.add(new ItemInfo("", null));
-        list.add(new ItemInfo("", null));
-        list.add(new ItemInfo("", null));
-        list.add(new ItemInfo("", null));
-        SlidingViewAdapter adapter = new SlidingViewAdapter(list , 2, 2);
+        List<ItemInfo> items = SystemUtil.getInstallIcons(this);
+        SlidingViewAdapter adapter = new SlidingViewAdapter(items , 4, 4);
         slidingView.setAdapter(adapter);
     }
 

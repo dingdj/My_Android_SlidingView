@@ -1,5 +1,7 @@
 package com.example.slidingview;
 
+import android.util.Log;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -62,5 +64,13 @@ public class SlidingViewAdapter {
 
     public int getPageSize(){
         return col*row;
+    }
+
+    public ItemInfo getItemInfoByIndex(int index){
+        if(index>=0 && index < data.size()){
+            return data.get(index);
+        }
+        Log.w("SlidingViewAdapter", "index error");
+        return null;
     }
 }
