@@ -71,6 +71,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
         mScroller = new Scroller(getContext());
+        setBackgroundDrawable(getContext().getResources().getDrawable(R.drawable.bg));
     }
 
     /**
@@ -128,7 +129,6 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         layout.layout((screen)*screenWidth, 0, (screen+1)*screenWidth, screenHeight);
-        layout.setBackgroundColor(Color.RED);
         this.addViewInLayout(layout, this.getChildCount(), null, true);
         int pageSize = mAdapter.getPageSize();
         int index = 0;
