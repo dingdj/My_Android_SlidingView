@@ -32,4 +32,11 @@ public class SystemUtil {
 
     }
 
+    public static int dip2px(Context context, float dipValue) {
+        float currentDensity = context.getResources().getDisplayMetrics().density;
+        return (int) (dipValue * currentDensity + 0.5f);
+    }
+
+
+
 }

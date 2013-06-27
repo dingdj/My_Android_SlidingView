@@ -16,6 +16,10 @@ public class SlidingViewAdapter {
 
     protected List<ItemInfo> data;
 
+    private float childViewWidth;
+
+    private float childViewHeight;
+
 
     public SlidingViewAdapter(List<ItemInfo> data, int row, int col) {
         this.data = data;
@@ -72,5 +76,21 @@ public class SlidingViewAdapter {
         }
         Log.w("SlidingViewAdapter", "index error");
         return null;
+    }
+
+    public void setChildViewWidth(float childViewWidth) {
+        this.childViewWidth = childViewWidth;
+    }
+
+    public void setChildViewHeight(float childViewHeight) {
+        this.childViewHeight = childViewHeight;
+    }
+
+    public float getChildViewHeight() {
+        return childViewHeight;
+    }
+
+    public float getChildViewWidth() {
+        return childViewWidth;
     }
 }

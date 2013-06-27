@@ -2,6 +2,7 @@ package com.example.slidingview;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -73,7 +74,8 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
         mScroller = new Scroller(getContext());
-        setBackgroundDrawable(getContext().getResources().getDrawable(R.drawable.bg));
+        Drawable drawable = getContext().getResources().getDrawable(R.drawable.bg);
+        setBackgroundDrawable(drawable);
     }
 
     /**
@@ -154,6 +156,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
                 view.setLayoutParams(new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT));
+                view.measure(width, height);
                 view.layout(l, t, l+width, t+height);
                 l = l + width;
                 layout.addViewInLayout(view, layout.getChildCount(), null, true);
@@ -291,7 +294,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         return rtn + (int)(interval/(width/2));
     }
 
-    abstract protected View onGetItemView(int position, View contentView, View parent);
+    abstract protected View onGetItemView(int position, View contentView, ViewGroup parent);
 
     public void setAdapter(SlidingViewAdapter mAdapter) {
         this.mAdapter = mAdapter;
