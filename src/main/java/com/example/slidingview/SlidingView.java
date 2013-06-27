@@ -31,6 +31,8 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     private float mLastMotionY;
 
+    private List<PageChangeEvent> pageChangeEvents;
+
     /**
      * Fling灵敏度
      */
@@ -79,13 +81,18 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
      */
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        Log.v(TAG, "onLayout changed"+changed);
         int width = r - l;
+        Log.v(TAG, "onLayout width"+width);
         int height = b - t;
+        Log.v(TAG, "onLayout height"+height);
 
-        int childWidth = width/mAdapter.getCol();
-        int childHeight = height/mAdapter.getRow();
-        this.width = width;
-        layoutChildren(mCurrentScreen, width, height, childWidth, childHeight);
+        if(changed){
+            int childWidth = width/mAdapter.getCol();
+            int childHeight = height/mAdapter.getRow();
+            this.width = width;
+            layoutChildren(mCurrentScreen, width, height, childWidth, childHeight);
+        }
     }
 
     /**
@@ -262,7 +269,15 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
             float x = screen*width;
             int dx = (int)(x - mScroller.getFinalX());
             smoothScrollBy(dx, 0);
-            mCurrentScreen = screen;
+            //deal page change event
+            if(mCurrentScreen != screen){
+                if(pageChangeEvents != null){
+                    for(PageChangeEvent pageChangeEvent : pageChangeEvents){
+                        pageChangeEvent.pageChanged(mCurrentScreen, screen, screenNum);
+                    }
+                }
+                mCurrentScreen = screen;
+            }
         }else{
             Log.w(TAG, "screen index error");
         }
@@ -284,5 +299,21 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     public SlidingViewAdapter getAdapter() {
         return mAdapter;
+    }
+
+    public void registerPageChangeEvent(PageChangeEvent event){
+        if(pageChangeEvents == null){
+            pageChangeEvents = new ArrayList<PageChangeEvent>();
+        }
+        pageChangeEvents.add(event);
+    }
+
+    static interface PageChangeEvent{
+        void pageChanged(int lastPage, int curPage, int pages);
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 }

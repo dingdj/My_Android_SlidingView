@@ -5,8 +5,6 @@ import android.app.Activity;
 import android.view.Menu;
 
 import com.example.util.SystemUtil;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,6 +13,7 @@ import java.util.List;
 public class MainActivity extends Activity {
 
     CustomSlidingView slidingView;
+    LightBar lightBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +22,9 @@ public class MainActivity extends Activity {
         slidingView = (CustomSlidingView)findViewById(R.id.slidingview);
         List<ItemInfo> items = SystemUtil.getInstallIcons(this);
         SlidingViewAdapter adapter = new SlidingViewAdapter(items , 4, 4);
+        initLightBar(adapter.getPageNum());
         slidingView.setAdapter(adapter);
+        slidingView.registerPageChangeEvent(lightBar);
     }
 
 
@@ -32,6 +33,15 @@ public class MainActivity extends Activity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    private void initLightBar(int pageNums){
+        lightBar = (LightBar)findViewById(R.id.lightBar);
+        lightBar.setNormalLighter(getResources().getDrawable(R.drawable.drawer_lightbar_normal));
+        lightBar.setSelectedLighter(getResources().getDrawable(R.drawable.drawer_lightbar_checked));
+        lightBar.setItems(pageNums);
+        lightBar.setCurItem(0);
+        lightBar.initLightBar();
     }
     
 }
