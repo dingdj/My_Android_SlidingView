@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 /**
  * Created by dingdj on 13-6-27.
  */
-public class LightBar extends LinearLayout implements SlidingView.PageChangeEvent{
+public class LightBar extends LinearLayout implements SlidingView.PageChangeListener {
 
     private static final String TAG = "LightBar";
 

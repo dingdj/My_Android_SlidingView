@@ -1,8 +1,6 @@
 package com.example.slidingview;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -32,7 +30,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     private float mLastMotionY;
 
-    private List<PageChangeEvent> pageChangeEvents;
+    private List<PageChangeListener> mPageChangeListeners;
 
     /**
      * Fling灵敏度
@@ -52,6 +50,8 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     private int mMaximumVelocity;
 
     private VelocityTracker mVelocityTracker;
+
+    private boolean forceLayout = false;
 
     public SlidingView(Context context) {
         super(context);
@@ -74,8 +74,8 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
         mScroller = new Scroller(getContext());
-        Drawable drawable = getContext().getResources().getDrawable(R.drawable.bg);
-        setBackgroundDrawable(drawable);
+        /*Drawable drawable = getContext().getResources().getDrawable(R.drawable.bg);
+        setBackgroundDrawable(drawable);*/
     }
 
     /**
@@ -274,9 +274,9 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
             smoothScrollBy(dx, 0);
             //deal page change event
             if(mCurrentScreen != screen){
-                if(pageChangeEvents != null){
-                    for(PageChangeEvent pageChangeEvent : pageChangeEvents){
-                        pageChangeEvent.pageChanged(mCurrentScreen, screen, screenNum);
+                if(mPageChangeListeners != null){
+                    for(PageChangeListener pageChangeListener : mPageChangeListeners){
+                        pageChangeListener.pageChanged(mCurrentScreen, screen, screenNum);
                     }
                 }
                 mCurrentScreen = screen;
@@ -304,19 +304,29 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         return mAdapter;
     }
 
-    public void registerPageChangeEvent(PageChangeEvent event){
-        if(pageChangeEvents == null){
-            pageChangeEvents = new ArrayList<PageChangeEvent>();
+    public void registerPageChangeEvent(PageChangeListener event){
+        if(mPageChangeListeners == null){
+            mPageChangeListeners = new ArrayList<PageChangeListener>();
         }
-        pageChangeEvents.add(event);
+        mPageChangeListeners.add(event);
     }
 
-    static interface PageChangeEvent{
+    static interface PageChangeListener {
         void pageChanged(int lastPage, int curPage, int pages);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if(forceLayout){
+            int width = (int) (mAdapter.getChildViewWidth()*mAdapter.getCol());
+            int height = (int) (mAdapter.getChildViewHeight()*mAdapter.getRow());
+            setMeasuredDimension(width, height);
+        }else{
+             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }
+    }
+
+    public void setForceLayout(boolean forceLayout) {
+        this.forceLayout = forceLayout;
     }
 }

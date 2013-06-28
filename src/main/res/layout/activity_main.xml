@@ -1,21 +1,24 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              tools:context=".MainActivity">
 
-  <com.example.slidingview.LightBar
+
+    <com.example.slidingview.CustomSlidingView
+            android:id="@+id/slidingview"
+            android:layout_weight="2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    <com.example.slidingview.LightBar
             android:id="@+id/lightBar"
             android:layout_width="match_parent"
-            android:layout_height="20dp"
+            android:layout_weight="1"
+            android:layout_height="50dp"
             android:orientation="horizontal"
             android:gravity="center"/>
-  <com.example.slidingview.CustomSlidingView
-        android:id="@+id/slidingview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
 
 
 </LinearLayout>
