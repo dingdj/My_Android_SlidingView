@@ -7,10 +7,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.slidingview.springmode.SpringModeHelper;
 import com.example.util.SystemUtil;
 
 /**
@@ -75,8 +77,13 @@ public class CustomSlidingView extends SlidingView{
      */
     @Override
     public boolean onLongClick(View v) {
-        Toast toast = Toast.makeText(v.getContext(), "onLongClick", 200);
-        toast.show();
+       // Toast toast = Toast.makeText(v.getContext(), "onLongClick", 200);
+       // toast.show();
+        SpringModeHelper springModeHelper = SpringModeHelper.getInstance();
+        int height = this.getHeight();
+        int width = this.getWidth();
+        springModeHelper.initSpringModeParams(width/8,width/8,width, height);
+        springModeHelper.animationToSpringMode(this.getChildAt(0));
         return true;
     }
 }
