@@ -83,7 +83,7 @@ public class CustomSlidingView extends SlidingView{
         int height = this.getHeight();
         int width = this.getWidth();
         springModeHelper.initSpringModeParams(width/8,width/8,width, height);
-        springModeHelper.animationToSpringMode(this.getChildAt(0));
+        springModeHelper.animationToSpringMode(this);
         return true;
     }
 }

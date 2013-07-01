@@ -74,8 +74,6 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
         mScroller = new Scroller(getContext());
-        /*Drawable drawable = getContext().getResources().getDrawable(R.drawable.bg);
-        setBackgroundDrawable(drawable);*/
     }
 
     /**
@@ -83,12 +81,8 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
      */
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        Log.v(TAG, "onLayout changed"+changed);
         int width = r - l;
-        Log.v(TAG, "onLayout width"+width);
         int height = b - t;
-        Log.v(TAG, "onLayout height"+height);
-
         if(changed){
             int childWidth = width/mAdapter.getCol();
             int childHeight = height/mAdapter.getRow();
@@ -175,12 +169,10 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         final float y = ev.getY();
         switch (action){
             case MotionEvent.ACTION_DOWN:
-                Log.v(TAG, "onInterceptTouchEvent ACTION_DOWN");
                 mLastMotionX = x;
                 mLastMotionY = y;
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.v(TAG, "onInterceptTouchEvent ACTION_MOVE");
                 int deltaX = (int) (mLastMotionX - x);
                 if(Math.abs(deltaX) > 5){
                     mTouchState = TOUCH_STATE_SCROLLING;
@@ -225,7 +217,6 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
                 mTouchState = TOUCH_STATE_REST;
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.v(TAG, "onTouchEvent ACTION_MOVE"+mScroller.getCurrX());
                 int deltaX = (int) (mLastMotionX - x);
                 mLastMotionX = x;
                 smoothScrollBy((int)(3*deltaX/4), 0);
@@ -288,7 +279,6 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     private int getScreen(){
         int x = mScroller.getFinalX();
-        Log.v("getScreen x", "x:"+ x);
         float interval = x%width;
         int rtn = (int)(x/width);
         return rtn + (int)(interval/(width/2));
@@ -328,5 +318,9 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     public void setForceLayout(boolean forceLayout) {
         this.forceLayout = forceLayout;
+    }
+
+    public int getCurrentScreen() {
+        return mCurrentScreen;
     }
 }

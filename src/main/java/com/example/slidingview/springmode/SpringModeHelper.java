@@ -1,8 +1,16 @@
 package com.example.slidingview.springmode;
 
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
+
+import com.example.slidingview.SlidingView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by dingdj on 13-6-30.
@@ -14,6 +22,9 @@ public class SpringModeHelper {
 
     private float normalScreenWidth;
     private float normalScreenHeight;
+
+    private float springScreenWidth;
+    private float springScreenHeight;
 
     private static SpringModeHelper instance;
 
@@ -53,30 +64,55 @@ public class SpringModeHelper {
         return getSpringModeWidth()/normalScreenWidth;
     }
 
+
     /**
-     * 得到缩放的中心点
+     * 得到所有屏的缩放中心点 从当前屏开始计算
      * @return
      */
-    public int[] getScaleCenterPoint(){
-        int y = (int) (normalScreenHeight/10);
-        int x  = (int)(normalScreenWidth/2);
-        return new int[]{x, y};
+    public List<int[]> getScaleCenterPoint(int viewNums, int curViewIndex){
+        springScreenWidth  = normalScreenWidth/2;
+        springScreenHeight = normalScreenHeight/10;
+
+        List<int[]> rtn = new ArrayList<int[]>();
+        for(int i=0; i< viewNums; i++){
+            int v_delta = i - curViewIndex;
+            int x  = (int) (0*(springGap+springScreenWidth) + springScreenWidth/2-springGap);
+            rtn .add(new int[]{x, (int)springScreenHeight});
+        }
+        return rtn;
     }
 
     /**
      * 进入到编辑模式
      */
-    public void animationToSpringMode(View view){
-        ScaleAnimation scaleAnimation;
+    public void animationToSpringMode(SlidingView view){
         float springscale = getSpringScale();
-        int[] centerPoint = getScaleCenterPoint();
-        scaleAnimation = new ScaleAnimation(1f,springscale,1f,springscale,
-                Animation.ABSOLUTE, centerPoint[0],
-                Animation.ABSOLUTE, centerPoint[1]);
-        scaleAnimation.setFillEnabled(true);
-        scaleAnimation.setFillAfter(true);
-        scaleAnimation.setDuration(500);
-        view.startAnimation(scaleAnimation);
+        int viewNums = view.getChildCount();
+        int mCurrentView = view.getCurrentScreen();
+        for(int i=0; i<viewNums; i++){
+            AnimationSet animatorSet = new AnimationSet(true);
+            ScaleAnimation scaleAnimation;
+            scaleAnimation = new ScaleAnimation(1f,springscale,1f,springscale,
+                    Animation.RELATIVE_TO_SELF, 0.5f,
+                    Animation.RELATIVE_TO_SELF, 0.1f);
+            scaleAnimation.setFillEnabled(true);
+            scaleAnimation.setFillAfter(true);
+            scaleAnimation.setDuration(500);
+            animatorSet.addAnimation(scaleAnimation);
+            if(i != mCurrentView){
+                float translationToX =   (i - mCurrentView)*((normalScreenWidth-springScreenWidth)/2 + springShowPart);
+                //基于缩放动画后的位置的偏移量
+                TranslateAnimation translateAnimation = new TranslateAnimation(0f, -translationToX, 0f, 0f);
+                translateAnimation.setFillEnabled(true);
+                translateAnimation.setFillAfter(true);
+                translateAnimation.setDuration(0);
+                animatorSet.addAnimation(translateAnimation);
+            }
+            animatorSet.setFillAfter(true);
+            view.getChildAt(i).startAnimation(animatorSet);
+
+
+        }
     }
 
     public void setNormalScreenWidth(float normalScreenWidth) {
