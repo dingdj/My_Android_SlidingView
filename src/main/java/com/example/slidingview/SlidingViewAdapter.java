@@ -93,4 +93,6 @@ public class SlidingViewAdapter {
     public float getChildViewWidth() {
         return childViewWidth;
     }
+
+
 }

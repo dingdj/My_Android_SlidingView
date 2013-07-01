@@ -1,12 +1,11 @@
 package com.example.slidingview.springmode;
 
-import android.util.Log;
-import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 
+import com.example.slidingview.R;
 import com.example.slidingview.SlidingView;
 
 import java.util.ArrayList;
@@ -19,12 +18,17 @@ public class SpringModeHelper {
     private float springGap;
     private float springShowPart;
 
-
+    //正常模式宽度
     private float normalScreenWidth;
+    //正常模式高度
     private float normalScreenHeight;
 
+    //编辑模式下的单屏的宽度
     private float springScreenWidth;
+    //编辑模式下的单屏的高度
     private float springScreenHeight;
+    //缩放比例
+    private float springScale;
 
     private static SpringModeHelper instance;
 
@@ -46,22 +50,9 @@ public class SpringModeHelper {
         this.springShowPart = springShowPart;
         this.normalScreenWidth = normalScreenWidth;
         this.normalScreenHeight = normalScreenHeight;
-    }
-
-    /**
-     * 获取编辑模式下的单屏的宽度
-     * @return
-     */
-    public float getSpringModeWidth(){
-        return normalScreenWidth - (springGap+springShowPart)*2;
-    }
-
-    /**
-     * 获取编辑模式下的缩放比例
-     * @return
-     */
-    public float getSpringScale(){
-        return getSpringModeWidth()/normalScreenWidth;
+        this.springScreenWidth = normalScreenWidth - (springGap+springShowPart)*2;
+        this.springScale = springScreenWidth/normalScreenWidth;
+        this.springScreenHeight = normalScreenHeight*springScale;
     }
 
 
@@ -70,14 +61,14 @@ public class SpringModeHelper {
      * @return
      */
     public List<int[]> getScaleCenterPoint(int viewNums, int curViewIndex){
-        springScreenWidth  = normalScreenWidth/2;
-        springScreenHeight = normalScreenHeight/10;
+        float scaleX  = normalScreenWidth/2;
+        float scaleY = normalScreenHeight/10;
 
         List<int[]> rtn = new ArrayList<int[]>();
         for(int i=0; i< viewNums; i++){
             int v_delta = i - curViewIndex;
-            int x  = (int) (0*(springGap+springScreenWidth) + springScreenWidth/2-springGap);
-            rtn .add(new int[]{x, (int)springScreenHeight});
+            int x  = (int) (v_delta*(springGap+scaleX) + scaleX/2-springGap);
+            rtn .add(new int[]{x, (int)scaleY});
         }
         return rtn;
     }
@@ -86,13 +77,12 @@ public class SpringModeHelper {
      * 进入到编辑模式
      */
     public void animationToSpringMode(SlidingView view){
-        float springscale = getSpringScale();
         int viewNums = view.getChildCount();
         int mCurrentView = view.getCurrentScreen();
         for(int i=0; i<viewNums; i++){
             AnimationSet animatorSet = new AnimationSet(true);
             ScaleAnimation scaleAnimation;
-            scaleAnimation = new ScaleAnimation(1f,springscale,1f,springscale,
+            scaleAnimation = new ScaleAnimation(1f,springScale,1f,springScale,
                     Animation.RELATIVE_TO_SELF, 0.5f,
                     Animation.RELATIVE_TO_SELF, 0.1f);
             scaleAnimation.setFillEnabled(true);
@@ -109,25 +99,33 @@ public class SpringModeHelper {
                 animatorSet.addAnimation(translateAnimation);
             }
             animatorSet.setFillAfter(true);
+//            view.getChildAt(i).setBackgroundDrawable(view.getContext().
+//                    getResources().getDrawable(R.drawable.bg));
             view.getChildAt(i).startAnimation(animatorSet);
-
-
         }
     }
 
-    public void setNormalScreenWidth(float normalScreenWidth) {
-        this.normalScreenWidth = normalScreenWidth;
-    }
-
-    public void setSpringShowPart(float springShowPart) {
-        this.springShowPart = springShowPart;
+    public float getSpringGap() {
+        return springGap;
     }
 
     public void setSpringGap(float springGap) {
         this.springGap = springGap;
     }
 
-    public void setNormalScreenHeight(float normalScreenHeight) {
-        this.normalScreenHeight = normalScreenHeight;
+    public float getSpringScreenWidth() {
+        return springScreenWidth;
+    }
+
+    public void setSpringScreenWidth(float springScreenWidth) {
+        this.springScreenWidth = springScreenWidth;
+    }
+
+    public float getSpringScale() {
+        return springScale;
+    }
+
+    public float getNormalScreenWidth() {
+        return normalScreenWidth;
     }
 }

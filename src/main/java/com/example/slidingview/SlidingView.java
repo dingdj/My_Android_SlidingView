@@ -10,6 +10,8 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
+import com.example.slidingview.springmode.SpringModeHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,12 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     private List<PageChangeListener> mPageChangeListeners;
 
+    public static enum Mode{Normal, Spring};
+
+    private Mode mode = Mode.Normal;
+
+    private boolean useCordinateScrollX = false;
+
     /**
      * Fling灵敏度
      */
@@ -52,6 +60,9 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     private VelocityTracker mVelocityTracker;
 
     private boolean forceLayout = false;
+
+    // spring mode scroll scale
+    private float scrollScale;
 
     public SlidingView(Context context) {
         super(context);
@@ -260,9 +271,9 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     private void scrollToScreen(int screen){
         int screenNum = mAdapter.getPageNum();
         if(screen >=0 && screen < screenNum){
-            float x = screen*width;
-            int dx = (int)(x - mScroller.getFinalX());
-            smoothScrollBy(dx, 0);
+            float dx = 0;
+            dx = screen*width - mScroller.getFinalX();
+            smoothScrollBy((int)dx, 0);
             //deal page change event
             if(mCurrentScreen != screen){
                 if(mPageChangeListeners != null){
@@ -323,4 +334,20 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     public int getCurrentScreen() {
         return mCurrentScreen;
     }
+
+    public Mode getMode() {
+        return mode;
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
+    public void computeScrollScale(){
+        SpringModeHelper springModeHelper = SpringModeHelper.getInstance();
+        scrollScale = (springModeHelper.getSpringScreenWidth()+springModeHelper.getSpringGap())/
+                springModeHelper.getNormalScreenWidth();
+    }
+
+
 }
