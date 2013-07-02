@@ -10,6 +10,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
+import com.example.slidingview.springmode.ScrollerEx;
 import com.example.slidingview.springmode.SpringModeHelper;
 
 import java.util.ArrayList;
@@ -38,14 +39,12 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
 
     private Mode mode = Mode.Normal;
 
-    private boolean useCordinateScrollX = false;
-
     /**
      * Fling灵敏度
      */
     public static final int SNAP_VELOCITY = 2000;
 
-    private Scroller mScroller;
+    private ScrollerEx mScroller;
 
     private float width;
 
@@ -84,7 +83,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         pageViewCache = new PageViewCache();
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
-        mScroller = new Scroller(getContext());
+        mScroller = new ScrollerEx(getContext());
     }
 
     /**
@@ -100,6 +99,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
             this.width = width;
             layoutChildren(mCurrentScreen, width, height, childWidth, childHeight);
         }
+        mScroller.initScrollerParams(getChildCount(),mCurrentScreen, Mode.Normal, width);
     }
 
     /**
@@ -241,7 +241,8 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     //调用此方法设置滚动的相对偏移
     public void smoothScrollBy(int dx, int dy) {
 
-        if(mScroller.getFinalX()+dx<=(mAdapter.getPageNum()-1)*width && mScroller.getFinalX()+dx >=0){
+        if(mScroller.getFinalX()+dx<= mScroller.getLeftLimit() &&
+                mScroller.getFinalX()+dx >= mScroller.getRightLimit()){
             //设置mScroller的滚动偏移量
             mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), dx, dy);
             invalidate();//这里必须调用invalidate()才能保证computeScroll()会被调用，否则不一定会刷新界面，看不到滚动效果
@@ -257,7 +258,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
      */
     @Override
     public void computeScroll() {
-        if (mScroller.computeScrollOffset()){//滚动完成
+        if (mScroller.computeScrollOffset()){//滚动未完成
             scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
             invalidate();
         }
@@ -271,8 +272,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     private void scrollToScreen(int screen){
         int screenNum = mAdapter.getPageNum();
         if(screen >=0 && screen < screenNum){
-            float dx = 0;
-            dx = screen*width - mScroller.getFinalX();
+            float dx = mScroller.getScrollXByScreen(screen, width) - mScroller.getFinalX();
             smoothScrollBy((int)dx, 0);
             //deal page change event
             if(mCurrentScreen != screen){
@@ -344,9 +344,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     }
 
     public void computeScrollScale(){
-        SpringModeHelper springModeHelper = SpringModeHelper.getInstance();
-        scrollScale = (springModeHelper.getSpringScreenWidth()+springModeHelper.getSpringGap())/
-                springModeHelper.getNormalScreenWidth();
+        mScroller.initScrollerParams(this.getChildCount(),mCurrentScreen, Mode.Spring, (int)width);
     }
 
 

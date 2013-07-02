@@ -86,6 +86,7 @@ public class CustomSlidingView extends SlidingView{
         springModeHelper.animationToSpringMode(this);
         this.setMode(Mode.Spring);
         this.computeScrollScale();
+
         //Log.v("SlidingView", "this.getFinalScrollX():"+this.getFinalScrollX());
         return true;
     }
