@@ -12,6 +12,7 @@ import android.widget.Scroller;
 
 import com.example.slidingview.springmode.ScrollerEx;
 import com.example.slidingview.springmode.SpringModeHelper;
+import com.example.util.LogHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     /**
      * Fling灵敏度
      */
-    public static final int SNAP_VELOCITY = 2000;
+    public static final int SNAP_VELOCITY = 1500;
 
     private ScrollerEx mScroller;
 
@@ -59,6 +60,8 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
     private VelocityTracker mVelocityTracker;
 
     private boolean forceLayout = false;
+
+    private boolean initScroller = false;
 
     // spring mode scroll scale
     private float scrollScale;
@@ -98,8 +101,11 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
             int childHeight = height/mAdapter.getRow();
             this.width = width;
             layoutChildren(mCurrentScreen, width, height, childWidth, childHeight);
+    }
+        if(!initScroller){
+            initScroller = true;
+            mScroller.initScrollerParams(getChildCount(),mCurrentScreen, Mode.Normal, width);
         }
-        mScroller.initScrollerParams(getChildCount(),mCurrentScreen, Mode.Normal, width);
     }
 
     /**
@@ -216,6 +222,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
             case MotionEvent.ACTION_UP:
                 mVelocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
                 int velocityX = (int) mVelocityTracker.getXVelocity();
+                LogHelper.d(TAG, "velocityX:"+velocityX);
                 if(velocityX > SNAP_VELOCITY){
                     scrollToScreen(mCurrentScreen-1);
                 }else if(velocityX < -SNAP_VELOCITY){
@@ -270,6 +277,7 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
      * @param screen
      */
     private void scrollToScreen(int screen){
+        LogHelper.d(TAG, "scrollToScreen:"+screen);
         int screenNum = mAdapter.getPageNum();
         if(screen >=0 && screen < screenNum){
             float dx = mScroller.getScrollXByScreen(screen, width) - mScroller.getFinalX();
@@ -288,11 +296,28 @@ public abstract class SlidingView extends ViewGroup implements View.OnClickListe
         }
     }
 
+    /**
+     * 计算应该滚动到哪个屏
+     * @return
+     */
     private int getScreen(){
         int x = mScroller.getFinalX();
-        float interval = x%width;
-        int rtn = (int)(x/width);
-        return rtn + (int)(interval/(width/2));
+        if(mode == Mode.Normal){
+            float interval = x%width;
+            int rtn = (int)(x/width);
+            return rtn + (int)(interval/(width/2));
+        }else if(mode == Mode.Spring){
+            SpringModeHelper springModeHelper = SpringModeHelper.getInstance();
+            float springGap = springModeHelper.getSpringGap();
+            float springScreenWidth = springModeHelper.getSpringScreenWidth();
+            float deltax =  x - mScroller.getRightLimit();
+            float interval = (int)(deltax%(springGap+springScreenWidth));
+            int rtn = (int)(x/(springGap+springScreenWidth));
+            return rtn + (int)(interval/((springGap+springScreenWidth)/2));
+        }else{
+            LogHelper.e(TAG, "error mode");
+            return 0;
+        }
     }
 
     abstract protected View onGetItemView(int position, View contentView, ViewGroup parent);

@@ -77,7 +77,8 @@ public class ScrollerEx extends Scroller{
             float springGap = springModeHelper.getSpringGap();
             float springScreenWidth = springModeHelper.getSpringScreenWidth();
             this.rightLimit = (int) (finalX - curScreen *
-                    (screenWidth - springGap - springScreenWidth));
+                    (springGap + springScreenWidth));
+            LogHelper.d(SlidingView.TAG, "rightLimit:"+rightLimit);
             this.leftLimit = (int)(finalX + (screenNum-curScreen-1)*(springGap+springScreenWidth));
         }else{
             Log.w("ScrollEx.initScrollerParams", "unknown mode");
@@ -91,12 +92,13 @@ public class ScrollerEx extends Scroller{
      */
     public Float getScrollXByScreen(int screen, float screenWidth){
         if(mode == SlidingView.Mode.Normal){
+            LogHelper.d("SlidingView", "mode normal");
             return screen*screenWidth;
         }else if(mode == SlidingView.Mode.Spring){
             SpringModeHelper springModeHelper = SpringModeHelper.getInstance();
             float springGap = springModeHelper.getSpringGap();
             float springScreenWidth = springModeHelper.getSpringScreenWidth();
-            LogHelper.d("SlidingView","flingWidth:"+rightLimit + screen * (springGap+springScreenWidth));
+            LogHelper.d("SlidingView","flingWidth:"+(rightLimit + screen * (springGap+springScreenWidth)));
             return rightLimit + screen * (springGap+springScreenWidth);
         }else{
             Log.w("ScrollEx.getScrollXByScreen", "unknown mode");
