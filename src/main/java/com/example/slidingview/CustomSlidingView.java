@@ -1,6 +1,7 @@
 package com.example.slidingview;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -63,8 +64,16 @@ public class CustomSlidingView extends SlidingView{
      */
     @Override
     public void onClick(View v) {
-        Toast toast = Toast.makeText(v.getContext(), "onClick", 200);
-        toast.show();
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(getResources(), R.drawable.bg, options);
+        int imageHeight = options.outHeight;
+        int imageWidth = options.outWidth;
+        String imageType = options.outMimeType;
+        Toast.makeText(v.getContext(), "imageHeight:"+imageHeight +
+                "imageWidth:"+imageWidth+
+                "imageType:"+imageType
+                , 2000).show();
 
     }
 
